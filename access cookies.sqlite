@@ -1,0 +1,50 @@
+#include <windows.h>
+#include <iostream>
+
+// Forward declare the sqlite3 structure
+struct sqlite3;
+
+// Define a type for the sqlite3_open function pointer
+typedef int (*Sqlite3Open)(const char *filename, sqlite3 **ppDb);
+
+// Define other necessary SQLite function pointers here
+// For example:
+// typedef int (*Sqlite3Close)(sqlite3 *);
+
+int main() {
+    // Load the SQLite DLL
+    HMODULE hSqlite3 = LoadLibrary(TEXT("sqlite3.dll")); // Ensure the correct path if necessary
+    if (!hSqlite3) {
+        std::cerr << "Failed to load sqlite3.dll" << std::endl;
+        return 1;
+    }
+
+    // Get the function pointer for sqlite3_open
+    Sqlite3Open sqlite3_open = (Sqlite3Open)GetProcAddress(hSqlite3, "sqlite3_open");
+    if (!sqlite3_open) {
+        std::cerr << "Failed to get the function address for sqlite3_open" << std::endl;
+        FreeLibrary(hSqlite3);
+        return 1;
+    }
+
+    // Dynamically load other necessary SQLite functions here
+    // For example:
+    // Sqlite3Close sqlite3_close = (Sqlite3Close)GetProcAddress(hSqlite3, "sqlite3_close");
+
+    // Open the Firefox cookies database
+    sqlite3 *db = nullptr;
+    // Replace "path_to_cookies.sqlite" with the actual path to the cookies.sqlite file in the Firefox profile
+    int rc = sqlite3_open("path_to_cookies.sqlite", &db);
+    if (rc) {
+        std::cerr << "Can't open database: " << rc << std::endl;
+    } else {
+        std::cout << "Opened database successfully" << std::endl;
+        // Perform database operations here
+    }
+
+    // Close the database and free resources
+    // if (db) sqlite3_close(db);
+    FreeLibrary(hSqlite3);
+
+    return 0;
+}
