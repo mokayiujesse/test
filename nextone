@@ -1,0 +1,37 @@
+#include <windows.h>
+#include <iostream>
+
+// Define a type for the sqlite3_open function pointer
+typedef int (*Sqlite3Open)(const char *filename, sqlite3 **ppDb);
+
+int main() {
+    HMODULE hSqlite3 = LoadLibrary(TEXT("sqlite3.dll"));
+    if (!hSqlite3) {
+        std::cerr << "Failed to load sqlite3.dll" << std::endl;
+        return 1;
+    }
+
+    // Get the function pointer for sqlite3_open
+    Sqlite3Open sqlite3_open = (Sqlite3Open)GetProcAddress(hSqlite3, "sqlite3_open");
+    if (!sqlite3_open) {
+        std::cerr << "Failed to get the function address for sqlite3_open" << std::endl;
+        FreeLibrary(hSqlite3);
+        return 1;
+    }
+
+    // Now you can use sqlite3_open as if you had statically linked against the library
+    // For example:
+    sqlite3 *db = nullptr;
+    int rc = sqlite3_open("mydatabase.db", &db);
+    if (rc) {
+        std::cerr << "Can't open database" << std::endl;
+    } else {
+        std::cout << "Opened database successfully" << std::endl;
+    }
+
+    // Don't forget to close the database and free the library when done
+    // sqlite3_close(db);
+    FreeLibrary(hSqlite3);
+
+    return 0;
+}
